@@ -1,0 +1,171 @@
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Discord_Tools__
+{
+    internal class Program
+    {
+        static async Task Main(string[] args)
+        {
+            Console.Title = "Discord Tools +";
+            while (true)
+            {
+                Console.Clear();
+                Banner(); // Display the banner with gradient text
+                Menu();
+
+                ConsoleKeyInfo input = Console.ReadKey();
+                char option = input.KeyChar;
+
+                Console.Clear();
+                switch (option)
+                {
+                    case '1':
+                        await CustomWebhookMessage(); // Custom webhook message sending
+                        break;
+
+                    case '9':
+                        Console.WriteLine("Exiting Discord Tools +...");
+                        return; // Exit the application
+
+                    default:
+                        Console.WriteLine("Invalid option. Try again.");
+                        break;
+                }
+
+                Console.WriteLine("\nPress any key to return to the menu...");
+                Console.ReadKey();
+            }
+        }
+
+        static void Banner()
+        {
+            string[] text = new string[]
+            {
+                "____  _                          __   ______            __            ",
+                "/ __ \\_______________  _________/ /  /_  ______  ____  / _____     __ ",
+                "/ / / / / ___/ ___/ __ \\ ___/ __  /    / / / __ \\/ __ \\/ / ___/  __/ /_",
+                "/ /_/ / (__  / /__/ /_/ / /  / /_/ /    / / / /_/ / /_/ / (__  )  /_  __/ ",
+                "/_____/ /____/\\___/\\____/_/   \\__,_/    /_/  \\____/\\____/_/____/    /_/   ",
+                "                                                                       ",
+                "                                               Discord Tools + - By @l3kkx"
+            };
+
+            foreach (var line in text)
+            {
+                DisplayGradientText(line);
+            }
+        }
+
+        static void DisplayGradientText(string text)
+        {
+            ConsoleColor[] gradientColors = new ConsoleColor[]
+            {
+                ConsoleColor.Cyan, ConsoleColor.White
+            };
+
+            int colorCount = gradientColors.Length;
+            int textLength = text.Length;
+
+            for (int i = 0; i < textLength; i++)
+            {
+                int colorIndex = (i * colorCount) / textLength;
+                Console.ForegroundColor = gradientColors[colorIndex];
+                Console.Write(text[i]);
+            }
+
+            Console.ResetColor();
+            Console.WriteLine();
+        }
+
+        static void Menu()
+        {
+            Console.WriteLine("\n1. Send Webhook Message (Specify Number of Messages) ");
+            Console.WriteLine("9. Exit Discord Tools + ");
+        }
+
+        static async Task CustomWebhookMessage()
+        {
+            Console.WriteLine("Enter your message (type 'END' on a new line to finish):");
+            StringBuilder messageBuilder = new StringBuilder();
+            while (true)
+            {
+                string line = Console.ReadLine();
+                if (line == "END")
+                {
+                    break;
+                }
+                messageBuilder.AppendLine(line);
+            }
+            string message = messageBuilder.ToString().TrimEnd();
+
+            Console.Write("Custom URL (e.g., Discord invite link): ");
+            string customUrl = Console.ReadLine();
+
+            Console.Write("Webhook URL: ");
+            string webhook = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(webhook))
+            {
+                Console.WriteLine("Invalid webhook URL. Try again.");
+                return;
+            }
+
+            string username = "Tapprs Raider";
+            string avatarUrl = "https://cdn.discordapp.com/attachments/1309597544006946928/1320912715463524352/c928d9f0-a6d9-4ec9-8c62-e75a2410fbf5_0.jpeg?ex=676bfc14&is=676aaa94&hm=698f37aafb1c15721cf0b2dc9c7940714bb440eca99704599909c843e52ea995&";
+
+            string signatureMessage = "\n > Made By @l3kkx\n" + customUrl;
+            string finalMessage = message + signatureMessage;
+
+            finalMessage = EscapeSpecialCharacters(finalMessage);
+
+            Console.Write("How many messages do you want to send? ");
+            if (!int.TryParse(Console.ReadLine(), out int messageCount) || messageCount <= 0)
+            {
+                Console.WriteLine("Invalid number. Please enter an actual number retard");
+                return;
+            }
+
+            string json = $"{{\"content\":\"{finalMessage}\", \"username\":\"{username}\", \"avatar_url\":\"{avatarUrl}\"}}";
+
+            using (HttpClient client = new HttpClient())
+            {
+                for (int i = 0; i < messageCount; i++)
+                {
+                    try
+                    {
+                        HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+                        HttpResponseMessage response = await client.PostAsync(webhook, content);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Message {i + 1} sent successfully!");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Failed to send message {i + 1}. HTTP Status: {response.StatusCode}");
+                        }
+
+                        await Task.Delay(200);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"An error occurred while sending message {i + 1}: {ex.Message}");
+                    }
+                }
+            }
+
+            Console.WriteLine("Successfully Sent All Messages.");
+        }
+
+        static string EscapeSpecialCharacters(string input)
+        {
+            return input.Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+        }
+    }
+}
