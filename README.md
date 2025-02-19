@@ -1,6 +1,6 @@
 # 🛡️ Webhook RaiderV2 🛡️
 
-Contact @l3kkx On Discord For ANY Issues
+Contact [@l3kkx](https://discordapp.com/users/772486816918011924) On Discord For ANY Issues
 
 This Tool Can Spam Message, Mass Ping Any Webhook URL Provided, Also Bypassing The HTTP Request Rate Limit, Ensuring The Specified Messages Are Exactly Sent
             
